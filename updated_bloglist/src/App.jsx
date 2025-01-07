@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import Blog from "./components/Blog";
 import blogService from "./services/blogs";
 import loginService from "./services/login";
+import userService from "./services/users"
 import Notification from "./components/Notification";
 import BlogForm from "./components/BlogForm";
 import Togglable from "./components/Togglable";
@@ -61,6 +62,15 @@ const App = () => {
       dispatch(byebyeBlog(id))
     }
   };
+
+  const Users = () => {
+
+    return (
+      <div>
+
+      </div>
+    )
+  }
 
   const loggedIn = useSelector(state => state.user)
 
