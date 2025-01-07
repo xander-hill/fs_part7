@@ -16,6 +16,7 @@ import {
   useMatch,
   Navigate
 } from 'react-router-dom'
+import { Table } from 'react-bootstrap'
 
 const App = () => {
   const [username, setUsername] = useState("");
@@ -113,15 +114,19 @@ const App = () => {
         <Togglable buttonLabel="new blog" ref={blogFormRef}>
           <BlogForm createBlog={addBlog} />
         </Togglable>
-        <ul>
-          {sortedBlogs.map((blog) => (
-            <li key={blog.id}>
-              <Link to={`/blogs/${blog.id}`}>
-                {`${blog.title} by ${blog.author}`}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <Table striped>
+          <tbody>
+            {sortedBlogs.map((blog) => (
+              <tr key={blog.id}>
+                <td>
+                  <Link to={`/blogs/${blog.id}`}>
+                    {`${blog.title} by ${blog.author}`}
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
       </div>
     )
   }

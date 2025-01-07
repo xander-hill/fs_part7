@@ -60,10 +60,8 @@ export const byebyeBlog = id => {
 }
 
 export const commentBlog = (id, comment) => {
-    console.log('Comment in reducer', comment)
     return async dispatch => {
         const commentedBlog = await blogService.comment(id, comment)
-        console.log('Comment after service', commentedBlog)
         dispatch(changeBlog(commentedBlog))
     }
 }

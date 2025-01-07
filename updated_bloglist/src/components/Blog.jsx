@@ -31,11 +31,9 @@ const Blog = ({ blog, loggedIn }) => {
 
   const addComment = (event) => {
     event.preventDefault()
-    console.log('Comment:',comment)
     const commentToSend = {
       content: comment
     }
-    console.log('CommentToSend:', commentToSend)
     dispatch(commentBlog(blog.id, commentToSend))
     setComment('')
   }
