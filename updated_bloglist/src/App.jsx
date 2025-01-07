@@ -63,11 +63,28 @@ const App = () => {
     }
   };
 
+  const User = (user) => {
+    <div>
+      <h2>{user.name}</h2>
+      <ul>
+        {user.blogs.map(blog => {
+          <li key={blog.id}>{blog.title}</li>
+        })}
+      </ul>
+    </div>
+  }
+
   const Users = () => {
+    const userlist = userService.getAll()
 
     return (
       <div>
-
+        <h2>Users</h2>
+        <ul>
+        {userlist.map(user => {
+          <li key={user.id} >{`${user.name}: ${user.blogs.length}`}</li>
+        })}
+        </ul>
       </div>
     )
   }
