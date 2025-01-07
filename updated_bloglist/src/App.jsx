@@ -5,6 +5,7 @@ import loginService from "./services/login";
 import Notification from "./components/Notification";
 import BlogForm from "./components/BlogForm";
 import Togglable from "./components/Togglable";
+import { initializeUser, loginUser, logoutUser } from "./reducers/userReducer";
 import { setNotification } from './reducers/notificationReducer'
 import { useDispatch, useSelector } from 'react-redux'
 import { initializeBlogs, createBlog, updateBlog, byebyeBlog } from "./reducers/blogReducer";
@@ -12,7 +13,6 @@ import { initializeBlogs, createBlog, updateBlog, byebyeBlog } from "./reducers/
 const App = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [user, setUser] = useState(null);
   const dispatch = useDispatch()
 
   const blogFormRef = useRef();
@@ -21,14 +21,11 @@ const App = () => {
     event.preventDefault();
 
     try {
-      const user = await loginService.login({
+      const user = {
         username,
-        password,
-      });
-
-      window.localStorage.setItem("loggedBlogAppUser", JSON.stringify(user));
-      blogService.setToken(user.token);
-      setUser(user);
+        password
+      }
+      dispatch(loginUser(user))
       setUsername("");
       setPassword("");
     } catch (exception) {
@@ -38,9 +35,7 @@ const App = () => {
 
   const handleLogout = async (event) => {
     event.preventDefault();
-
-    window.localStorage.removeItem("loggedBlogAppUser");
-    setUser(null);
+    dispatch(logoutUser())
   };
 
   useEffect(() => {
@@ -48,12 +43,7 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem("loggedBlogAppUser");
-    if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON);
-      setUser(user);
-      blogService.setToken(user.token);
-    }
+    dispatch(initializeUser())
   }, []);
 
   const addBlog = (blogObject) => {
@@ -72,9 +62,11 @@ const App = () => {
     }
   };
 
+  const loggedIn = useSelector(state => state.user)
+
   const sortedBlogs = useSelector(state => [...state.blogs].sort((a, b) => b.likes - a.likes))
 
-  if (user === null) {
+  if (loggedIn === null) {
     return (
       <div>
         <h2>Log in to application</h2>
@@ -111,7 +103,7 @@ const App = () => {
       <h2>blogs</h2>
       <Notification />
       <div>
-        {user.name} is logged in
+        {loggedIn.name} is logged in
         <button type="submit" onClick={handleLogout}>
           logout
         </button>
@@ -126,7 +118,7 @@ const App = () => {
             blog={blog}
             likeBlog={() => likeBlog(blog.id)}
             removeBlog={() => deleteBlog(blog.id)}
-            loggedIn={user}
+            loggedIn={loggedIn}
           />
         ))}
       </div>
