@@ -10,13 +10,34 @@ import { initializeUser, loginUser, logoutUser } from "./reducers/userReducer";
 import { setNotification } from './reducers/notificationReducer'
 import { useDispatch, useSelector } from 'react-redux'
 import { initializeBlogs, createBlog, updateBlog, byebyeBlog } from "./reducers/blogReducer";
+import {
+  BrowserRouter as Router,
+  Routes, Route, Link,
+  useParams,
+  useNavigate,
+  useMatch,
+  Navigate
+} from 'react-router-dom'
 
 const App = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [users, setUsers] = useState([])
   const dispatch = useDispatch()
 
   const blogFormRef = useRef();
+
+  useEffect(() => {
+    dispatch(initializeBlogs())
+  }, []);
+
+  useEffect(() => {
+    dispatch(initializeUser())
+  }, []);
+
+  useEffect(() => {
+    userService.getAll().then(userlist => setUsers(userlist))
+  }, [])
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -39,14 +60,6 @@ const App = () => {
     dispatch(logoutUser())
   };
 
-  useEffect(() => {
-    dispatch(initializeBlogs())
-  }, []);
-
-  useEffect(() => {
-    dispatch(initializeUser())
-  }, []);
-
   const addBlog = (blogObject) => {
     blogFormRef.current.toggleVisibility();
     dispatch(createBlog(blogObject))
@@ -63,27 +76,47 @@ const App = () => {
     }
   };
 
-  const User = (user) => {
-    <div>
-      <h2>{user.name}</h2>
-      <ul>
-        {user.blogs.map(blog => {
-          <li key={blog.id}>{blog.title}</li>
-        })}
-      </ul>
-    </div>
+  const User = () => {
+    const { id } = useParams()
+    console.log(id)
+    const user = users.find(user => user.id === id)
+    console.log(user)
+    console.log(user.blogs)
+
+    if (!user) {
+      return (
+        <div>ERROR</div>
+      )
+    }
+
+    return (
+      <div>
+        <h2>{user.name}</h2>
+        <ul>
+          {user.blogs.map(blog => (
+            <li key={blog.id}>
+              {blog.title}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
   }
 
-  const Users = () => {
-    const userlist = userService.getAll()
+
+  const Users = ({ users }) => {
 
     return (
       <div>
         <h2>Users</h2>
         <ul>
-        {userlist.map(user => {
-          <li key={user.id} >{`${user.name}: ${user.blogs.length}`}</li>
-        })}
+          {users.map(user => (
+            <li key={user.id} >
+              <Link to={`/users/${user.id}`}>
+                {`${user.name}: ${user.blogs.length}`}
+              </Link>
+            </li>
+          ))}
         </ul>
       </div>
     )
@@ -149,6 +182,10 @@ const App = () => {
           />
         ))}
       </div>
+      <Routes>
+        <Route path="/users/:id" element={<User />} />
+        <Route path="/users" element={<Users users={users} />} />
+      </Routes>
     </div>
   );
 };
