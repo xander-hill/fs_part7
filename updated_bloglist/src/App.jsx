@@ -5,13 +5,16 @@ import loginService from "./services/login";
 import Notification from "./components/Notification";
 import BlogForm from "./components/BlogForm";
 import Togglable from "./components/Togglable";
+import { setNotification } from './reducers/notificationReducer'
+import { useDispatch } from 'react-redux'
 
 const App = () => {
   const [blogs, setBlogs] = useState([]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
-  const [message, setMessage] = useState(null);
+  // const [message, setMessage] = useState('')
+  const dispatch = useDispatch()
 
   const blogFormRef = useRef();
 
@@ -30,10 +33,7 @@ const App = () => {
       setUsername("");
       setPassword("");
     } catch (exception) {
-      setMessage("Wrong username and/or password");
-      setTimeout(() => {
-        setMessage(null);
-      }, 5000);
+      dispatch(setNotification("Wrong credentials", 5))
     }
   };
 
@@ -62,10 +62,11 @@ const App = () => {
 
     blogService.create(blogObject).then((returnedBlog) => {
       setBlogs(blogs.concat(returnedBlog));
-      setMessage(`Added ${returnedBlog.title} by ${returnedBlog.author}`);
-      setTimeout(() => {
-        setMessage(null);
-      }, 5000);
+      // setMessage(`Added ${returnedBlog.title} by ${returnedBlog.author}`);
+      // setTimeout(() => {
+      //   setMessage(null);
+      // }, 5000);
+      dispatch(setNotification(`Added ${returnedBlog.title} by ${returnedBlog.author}`, 5))
     });
   };
 
@@ -76,14 +77,14 @@ const App = () => {
     blogService
       .update(id, changedBlog)
       .then((returnedBlog) => {
-        console.log(returnedBlog);
         setBlogs(blogs.map((blog) => (blog.id === id ? returnedBlog : blog)));
       })
       .catch((error) => {
-        setMessage(`Note '${blog.title}' was already removed from server`);
-        setTimeout(() => {
-          setMessage(null);
-        }, 5000);
+        // setMessage(`Note '${blog.title}' was already removed from server`);
+        // setTimeout(() => {
+        //   setMessage(null);
+        // }, 5000);
+        dispatch(setNotification(`Note '${blog.title}' was already removed from server`, 5))
         setBlogs(blogs.filter((blog) => blog.id !== id));
       });
   };
@@ -94,11 +95,12 @@ const App = () => {
     if (window.confirm(`Remove ${blog.title} by ${blog.author}`)) {
       blogService
         .remove(id)
-        .then(setBlogs(blogs.filter((blog) => blog.id != id)))
+        .then(setBlogs(blogs.filter((blog) => blog.id !== id)))
         .catch((error) => {
           console.error("Error deleting blog:", error);
-          setMessage("Failed to delete the blog");
-          setTimeout(() => setMessage(null), 5000);
+          // setMessage("Failed to delete the blog");
+          // setTimeout(() => setMessage(null), 5000);
+          dispatch(setNotification("Failed to delete the blog", 5))
         });
     }
   };
@@ -109,7 +111,7 @@ const App = () => {
     return (
       <div>
         <h2>Log in to application</h2>
-        <Notification message={message} />
+        <Notification />
         <form onSubmit={handleLogin}>
           <div>
             username
@@ -140,7 +142,7 @@ const App = () => {
   return (
     <div>
       <h2>blogs</h2>
-      <Notification message={message} />
+      <Notification />
       <div>
         {user.name} is logged in
         <button type="submit" onClick={handleLogout}>
