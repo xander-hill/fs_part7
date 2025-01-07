@@ -1,9 +1,13 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
+import { useDispatch } from "react-redux";
+import { updateBlog, byebyeBlog } from "../reducers/blogReducer";
 
-const Blog = ({ blog, likeBlog, removeBlog, loggedIn }) => {
+const Blog = ({ blog, loggedIn }) => {
+  console.log(blog)
   const [details, setDetails] = useState(false);
   const isCreator = blog.user.name === loggedIn.name;
+  const dispatch = useDispatch()
 
   const blogStyle = {
     paddingTop: 10,
@@ -11,6 +15,16 @@ const Blog = ({ blog, likeBlog, removeBlog, loggedIn }) => {
     border: "solid",
     borderWidth: 1,
     marginBottom: 5,
+  };
+
+  const likeBlog = (id) => {
+    dispatch(updateBlog(id))
+  };
+
+  const deleteBlog = (id) => {
+    if (window.confirm('Remove blog?')) {
+      dispatch(byebyeBlog(id))
+    }
   };
 
   const changeDetails = () => {
@@ -29,29 +43,24 @@ const Blog = ({ blog, likeBlog, removeBlog, loggedIn }) => {
   return (
     <div style={blogStyle} className="blog">
       <div>
-        {blog.title} {blog.author}
+        <span>{blog.title} {blog.author}</span>
         <button onClick={changeDetails}>hide</button>
       </div>
       <div>{blog.url}</div>
       <div>
         likes: {blog.likes}
-        <button type="submit" onClick={likeBlog}>
+        <button type="submit" onClick={() => likeBlog(blog.id)}>
           like
         </button>
       </div>
       <div>{blog.user.name}</div>
       {isCreator && (
-        <button type="submit" onClick={removeBlog}>
+        <button type="submit" onClick={() => deleteBlog(blog.id)}>
           remove
         </button>
       )}
     </div>
   );
-};
-
-Blog.PropTypes = {
-  likeBlog: PropTypes.func.isRequired,
-  removeBlog: PropTypes.func.isRequired,
 };
 
 export default Blog;

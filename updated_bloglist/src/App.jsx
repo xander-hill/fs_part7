@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import Blog from "./components/Blog";
-import blogService from "./services/blogs";
-import loginService from "./services/login";
 import userService from "./services/users"
 import Notification from "./components/Notification";
 import BlogForm from "./components/BlogForm";
@@ -66,22 +64,9 @@ const App = () => {
     dispatch(setNotification(`Added ${blogObject.title} by ${blogObject.author}`, 5))
   };
 
-  const likeBlog = (id) => {
-    dispatch(updateBlog(id))
-  };
+  const sortedBlogs = useSelector(state => [...state.blogs].sort((a, b) => b.likes - a.likes))
 
-  const deleteBlog = (id) => {
-    if (window.confirm('Remove blog?')) {
-      dispatch(byebyeBlog(id))
-    }
-  };
-
-  const User = () => {
-    const { id } = useParams()
-    console.log(id)
-    const user = users.find(user => user.id === id)
-    console.log(user)
-    console.log(user.blogs)
+  const User = ({ user }) => {
 
     if (!user) {
       return (
@@ -122,9 +107,36 @@ const App = () => {
     )
   }
 
-  const loggedIn = useSelector(state => state.user)
+  const BlogList = () => {
+    return (
+      <div>
+        <Togglable buttonLabel="new blog" ref={blogFormRef}>
+          <BlogForm createBlog={addBlog} />
+        </Togglable>
+        <ul>
+          {sortedBlogs.map((blog) => (
+            <li key={blog.id}>
+              <Link to={`/blogs/${blog.id}`}>
+                {`${blog.title} by ${blog.author}`}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
 
-  const sortedBlogs = useSelector(state => [...state.blogs].sort((a, b) => b.likes - a.likes))
+  const userMatch = useMatch('/users/:id')
+  const user = userMatch
+    ? users.find(a => a.id === userMatch.params.id)
+    : null
+
+  const blogMatch = useMatch('/blogs/:id')
+  const blog = blogMatch
+    ? sortedBlogs.find(blog => blog.id === blogMatch.params.id)
+    : null
+
+  const loggedIn = useSelector(state => state.user)
 
   if (loggedIn === null) {
     return (
@@ -168,22 +180,13 @@ const App = () => {
           logout
         </button>
       </div>
-      <Togglable buttonLabel="new blog" ref={blogFormRef}>
-        <BlogForm createBlog={addBlog} />
-      </Togglable>
-      <div>
-        {sortedBlogs.map((blog) => (
-          <Blog
-            key={blog.id}
-            blog={blog}
-            likeBlog={() => likeBlog(blog.id)}
-            removeBlog={() => deleteBlog(blog.id)}
-            loggedIn={loggedIn}
-          />
-        ))}
-      </div>
       <Routes>
-        <Route path="/users/:id" element={<User />} />
+        <Route path="/" element={<BlogList />} />
+        <Route path='/blogs/:id' element={<Blog
+          blog={blog}
+          loggedIn={loggedIn}
+        />} />
+        <Route path="/users/:id" element={<User user={user}/>} />
         <Route path="/users" element={<Users users={users} />} />
       </Routes>
     </div>
