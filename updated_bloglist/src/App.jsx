@@ -6,14 +6,13 @@ import Notification from "./components/Notification";
 import BlogForm from "./components/BlogForm";
 import Togglable from "./components/Togglable";
 import { setNotification } from './reducers/notificationReducer'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { initializeBlogs, createBlog, updateBlog, byebyeBlog } from "./reducers/blogReducer";
 
 const App = () => {
-  const [blogs, setBlogs] = useState([]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
-  // const [message, setMessage] = useState('')
   const dispatch = useDispatch()
 
   const blogFormRef = useRef();
@@ -45,7 +44,7 @@ const App = () => {
   };
 
   useEffect(() => {
-    blogService.getAll().then((blogs) => setBlogs(blogs));
+    dispatch(initializeBlogs())
   }, []);
 
   useEffect(() => {
@@ -59,53 +58,21 @@ const App = () => {
 
   const addBlog = (blogObject) => {
     blogFormRef.current.toggleVisibility();
-
-    blogService.create(blogObject).then((returnedBlog) => {
-      setBlogs(blogs.concat(returnedBlog));
-      // setMessage(`Added ${returnedBlog.title} by ${returnedBlog.author}`);
-      // setTimeout(() => {
-      //   setMessage(null);
-      // }, 5000);
-      dispatch(setNotification(`Added ${returnedBlog.title} by ${returnedBlog.author}`, 5))
-    });
+    dispatch(createBlog(blogObject))
+    dispatch(setNotification(`Added ${blogObject.title} by ${blogObject.author}`, 5))
   };
 
   const likeBlog = (id) => {
-    const blog = blogs.find((blog) => blog.id === id);
-    const changedBlog = { ...blog, likes: blog.likes + 1 };
-
-    blogService
-      .update(id, changedBlog)
-      .then((returnedBlog) => {
-        setBlogs(blogs.map((blog) => (blog.id === id ? returnedBlog : blog)));
-      })
-      .catch((error) => {
-        // setMessage(`Note '${blog.title}' was already removed from server`);
-        // setTimeout(() => {
-        //   setMessage(null);
-        // }, 5000);
-        dispatch(setNotification(`Note '${blog.title}' was already removed from server`, 5))
-        setBlogs(blogs.filter((blog) => blog.id !== id));
-      });
+    dispatch(updateBlog(id))
   };
 
   const deleteBlog = (id) => {
-    const blog = blogs.find((blog) => blog.id === id);
-
-    if (window.confirm(`Remove ${blog.title} by ${blog.author}`)) {
-      blogService
-        .remove(id)
-        .then(setBlogs(blogs.filter((blog) => blog.id !== id)))
-        .catch((error) => {
-          console.error("Error deleting blog:", error);
-          // setMessage("Failed to delete the blog");
-          // setTimeout(() => setMessage(null), 5000);
-          dispatch(setNotification("Failed to delete the blog", 5))
-        });
+    if (window.confirm('Remove blog?')) {
+      dispatch(byebyeBlog(id))
     }
   };
 
-  const sortedBlogs = blogs.sort((a, b) => b.likes - a.likes);
+  const sortedBlogs = useSelector(state => [...state.blogs].sort((a, b) => b.likes - a.likes))
 
   if (user === null) {
     return (
@@ -153,7 +120,7 @@ const App = () => {
         <BlogForm createBlog={addBlog} />
       </Togglable>
       <div>
-        {blogs.map((blog) => (
+        {sortedBlogs.map((blog) => (
           <Blog
             key={blog.id}
             blog={blog}
