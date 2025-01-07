@@ -1,117 +1,115 @@
-import { render, screen } from '@testing-library/react'
-import Blog from './Blog'
-import userEvent from '@testing-library/user-event'
+import { render, screen } from "@testing-library/react";
+import Blog from "./Blog";
+import userEvent from "@testing-library/user-event";
 
-test('renders blog', () => {
-    const blog = {
-        title: 'Example blog',
-        author: 'Me',
-        url: 'www.shouldnotappear.net',
-        likes: 0,
-        user: {
-            name: 'joe'
-        }
-    }
+test("renders blog", () => {
+  const blog = {
+    title: "Example blog",
+    author: "Me",
+    url: "www.shouldnotappear.net",
+    likes: 0,
+    user: {
+      name: "joe",
+    },
+  };
 
-    const loggedIn = {
-        name: 'nacho'
-    }
+  const loggedIn = {
+    name: "nacho",
+  };
 
-    render(<Blog blog={blog} loggedIn={loggedIn}/>)
+  render(<Blog blog={blog} loggedIn={loggedIn} />);
 
-    const element = screen.getByText('Example blog Me')
+  const element = screen.getByText("Example blog Me");
 
-    expect(element).toBeDefined()
+  expect(element).toBeDefined();
+});
 
-})
+test("default blog renders with only title and author", () => {
+  const blog = {
+    title: "Example blog",
+    author: "Me",
+    url: "www.shouldnotappear.net",
+    likes: 0,
+    user: {
+      name: "joe",
+    },
+  };
 
-test('default blog renders with only title and author', () => {
-    const blog = {
-        title: 'Example blog',
-        author: 'Me',
-        url: 'www.shouldnotappear.net',
-        likes: 0,
-        user: {
-            name: 'joe'
-        }
-    }
+  const loggedIn = {
+    name: "nacho",
+  };
 
-    const loggedIn = {
-        name: 'nacho'
-    }
+  render(<Blog blog={blog} loggedIn={loggedIn} />);
 
-    render(<Blog blog={blog} loggedIn={loggedIn}/>)
+  const element = screen.getByText("Example blog Me");
+  expect(element).toBeDefined();
 
-    const element = screen.getByText('Example blog Me')
-    expect(element).toBeDefined()
+  const url = screen.queryByText("www.shouldnotappear.net");
+  expect(url).toBeNull();
 
-    const url = screen.queryByText('www.shouldnotappear.net')
-    expect(url).toBeNull()
+  const likes = screen.queryByText("likes: 0");
+  expect(likes).toBeNull();
+});
 
-    const likes = screen.queryByText('likes: 0')
-    expect(likes).toBeNull()
+test("blog shows url and likes after button clicked", async () => {
+  const blog = {
+    title: "Example blog",
+    author: "Me",
+    url: "www.shouldnotappear.net",
+    likes: 0,
+    user: {
+      name: "joe",
+    },
+  };
 
-})
+  const loggedIn = {
+    name: "nacho",
+  };
 
-test('blog shows url and likes after button clicked', async () => {
-    const blog = {
-        title: 'Example blog',
-        author: 'Me',
-        url: 'www.shouldnotappear.net',
-        likes: 0,
-        user: {
-            name: 'joe'
-        }
-    }
+  const user = userEvent.setup();
 
-    const loggedIn = {
-        name: 'nacho'
-    }
+  render(<Blog blog={blog} loggedIn={loggedIn} />);
 
-    const user = userEvent.setup()
+  const viewButton = screen.getByText("view");
 
-    render(<Blog blog={blog} loggedIn={loggedIn}/>)
+  await user.click(viewButton);
 
-    const viewButton = screen.getByText('view')
+  const url = screen.queryByText("www.shouldnotappear.net");
+  expect(url).toBeDefined();
 
-    await user.click(viewButton)
+  const likes = screen.queryByText("likes: 0");
+  expect(likes).toBeDefined();
+});
 
-    const url = screen.queryByText('www.shouldnotappear.net')
-    expect(url).toBeDefined()
+test("like button works", async () => {
+  const blog = {
+    title: "Example blog",
+    author: "Me",
+    url: "www.shouldnotappear.net",
+    likes: 0,
+    user: {
+      name: "joe",
+    },
+  };
 
-    const likes = screen.queryByText('likes: 0')
-    expect(likes).toBeDefined()
-})
+  const loggedIn = {
+    name: "nacho",
+  };
 
-test('like button works', async () => {
-    const blog = {
-        title: 'Example blog',
-        author: 'Me',
-        url: 'www.shouldnotappear.net',
-        likes: 0,
-        user: {
-            name: 'joe'
-        }
-    }
+  const likeBlog = vi.fn();
 
-    const loggedIn = {
-        name: 'nacho'
-    }
+  const user = userEvent.setup();
 
-    const likeBlog = vi.fn()
+  render(<Blog blog={blog} loggedIn={loggedIn} likeBlog={likeBlog} />);
 
-    const user = userEvent.setup()
+  const viewButton = screen.getByText("view");
 
-    render(<Blog blog={blog} loggedIn={loggedIn} likeBlog={likeBlog}/>)
+  await user.click(viewButton);
 
-    const viewButton = screen.getByText('view')
+  const likeButton = screen.getByText("like");
 
-    await user.click(viewButton)
+  await user.click(likeButton);
+  await user.click(likeButton);
 
-    const likeButton = screen.getByText('like')
-
-    await user.click(likeButton)
-    await user.click(likeButton)
-
-    expect(likeBlog.mock.calls).toHaveLength(2)
-})
+  expect(likeBlog.mock.calls).toHaveLength(2);
+});
