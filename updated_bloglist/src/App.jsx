@@ -175,6 +175,8 @@ const App = () => {
       <h2>blogs</h2>
       <Notification />
       <div>
+        <Link to="/">blogs  </Link>
+        <Link to="/users">users</Link>
         {loggedIn.name} is logged in
         <button type="submit" onClick={handleLogout}>
           logout
